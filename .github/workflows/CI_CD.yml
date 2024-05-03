@@ -51,6 +51,6 @@ jobs:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       run: |
         podman pull docker.io/$DOCKER_USERNAME/podmandemo:latest
-        podman stop podmandemo || true
-        podman rm podmandemo || true
+        podman stop podmandemo
+        podman rm podmandemo
         podman run -d --name podman-demo-container -p 8080:80 docker.io/$DOCKER_USERNAME/podmandemo:latest
