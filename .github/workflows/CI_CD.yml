@@ -53,4 +53,4 @@ jobs:
         podman pull docker.io/$DOCKER_USERNAME/podmandemo:latest
         podman stop podmandemo
         podman rm podmandemo
-        podman run -d --name podmandemo -p 8080:80 docker.io/$DOCKER_USERNAME/podmandemo:latest
+        podman run -d -p 8080:80 docker.io/$DOCKER_USERNAME/podmandemo:latest
