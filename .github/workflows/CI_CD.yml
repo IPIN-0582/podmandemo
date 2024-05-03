@@ -39,6 +39,7 @@ jobs:
       run: |
         podman push docker.io/ipin0582/podmandemo:${GITHUB_SHA::7}
         podman push docker.io/ipin0582/podmandemo:latest
+        
   deploy:
     needs: build
     runs-on: self-hosted
@@ -48,5 +49,7 @@ jobs:
       env:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       run: |
-        podman pull docker.io/ipin0582/podmandemo:latest
-        podman run -d --name podmandemo -p 8090:80 docker.io/$DOCKER_USERNAME/podmandemo:latest
+        podman pull docker.io/$DOCKER_USERNAME/podmandemo:latest
+        podman stop podmandemo || true
+        podman rm podmandemo || true
+        podman run -d --name podmandemo -p 8080:80 docker.io/$DOCKER_USERNAME/podmandemo:latest
