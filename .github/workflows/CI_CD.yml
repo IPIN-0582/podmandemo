@@ -38,7 +38,7 @@ jobs:
 
     - name: Push to Docker Hub
       run: |
-        podman push docker.io/ipin0582/podmandemoo:${GITHUB_SHA::7}
+        podman push docker.io/ipin0582/podmandemo:${GITHUB_SHA::7}
         podman push docker.io/ipin0582/podmandemo:latest
 
   deploy:
