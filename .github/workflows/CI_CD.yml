@@ -49,7 +49,7 @@ jobs:
       env:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       run: |
-        podman pull docker.io/$DOCKER_USERNAME/podmandemo:latest
+        podman pull docker.io/ipin0582/podmandemo:latest
         podman stop podmandemo
         podman rm podmandemo
-        podman run -d --name podmandemo -p 8080:80 docker.io/$DOCKER_USERNAME/podmandemo:latest
+        podman run -d --name podmandemo -p 8080:80 docker.io/ipin0582/podmandemo:latest
