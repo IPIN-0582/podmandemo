@@ -42,14 +42,18 @@ jobs:
         
   deploy:
     needs: build
-    runs-on: self-hosted
-    
+    runs-on: ubuntu-latest  # Keep using the same runner
+  
     steps:
-    - name: Deploy to local machine
-      env:
-        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+    - name: Connect to WSL (optional)
       run: |
-        podman pull docker.io/$DOCKER_USERNAME/podmandemo:latest
-        podman stop podmandemo || true
-        podman rm podmandemo || true
-        podman run -d --name podmandemo -p 8080:80 docker.io/$DOCKER_USERNAME/podmandemo:latest
+        # This step is optional if WSL automatically starts on login
+        wsl --launch ubuntu  # Replace "ubuntu" with your distro name
+  
+    - name: Deploy to local machine (using podman in WSL)
+      run: |
+        podman pull docker.io/$DOCKER_USERNAME/podman-demo:latest
+        podman stop podman-demo-container || true
+        podman rm podman-demo-container || true
+        podman run -d --name podman-demo-container -p 8080:80 docker.io/$DOCKER_USERNAME/podman-demo:latest
+
