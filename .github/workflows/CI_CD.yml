@@ -1,59 +1,76 @@
-name: Podman CI/CD
+# .github/workflows/ci-cd.yml
+name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
   pull_request:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v2
-    
-    - name: Set up Podman
-      run: |
-        sudo apt-get update
-        sudo apt-get -y install podman
-        
-    - name: Build the Docker image
-      run: |
-        podman build . --file Dockerfile --tag docker.io/ipin0582/podmandemo:${GITHUB_SHA::7}
-        podman tag docker.io/ipin0582/podmandemo:${GITHUB_SHA::7} docker.io/ipin0582/podmandemo:latest
-        
-    - name: Run Trivy vulnerability scanner
-      run: |
-        curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
-        trivy image docker.io/ipin0582/podmandemo:${GITHUB_SHA::7}
-        
-    - name: Log in to Docker Hub
-      env:
-        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-      run: |
-        echo $DOCKER_PASSWORD | podman login docker.io -u $DOCKER_USERNAME --password-stdin
-        
-    - name: Push to Docker Hub
-      run: |
-        podman push docker.io/ipin0582/podmandemo:${GITHUB_SHA::7}
-        podman push docker.io/ipin0582/podmandemo:latest
-        
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest  # Keep using the same runner
-  
-    steps:
-    - name: Connect to WSL (optional)
-      run: |
-        # This step is optional if WSL automatically starts on login
-        wsl --launch ubuntu  # Replace "ubuntu" with your distro name
-  
-    - name: Deploy to local machine (using podman in WSL)
-      run: |
-        podman pull docker.io/$DOCKER_USERNAME/podman-demo:latest
-        podman stop podman-demo-container || true
-        podman rm podman-demo-container || true
-        podman run -d --name podman-demo-container -p 8080:80 docker.io/$DOCKER_USERNAME/podman-demo:latest
 
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: secret
+          MYSQL_DATABASE: todos
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+      redis:
+        image: redis:latest
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    env:
+      MYSQL_HOST: mysql
+      MYSQL_USER: root
+      MYSQL_PASSWORD: secret
+      MYSQL_DB: todos
+      REDIS_HOST: redis
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "16"
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Run tests
+        run: yarn test
+
+      - name: Build Docker image
+        run: docker build -t todoapp .
+
+      - name: Run Docker Compose
+        run: docker-compose up -d --build
+
+      - name: Run application tests
+        run: |
+          docker-compose run app sh -c "yarn test"
+
+      - name: Lint the code
+        run: |
+          docker-compose run app sh -c "yarn lint"
+
+      - name: Stop and remove Docker containers
+        run: docker-compose down

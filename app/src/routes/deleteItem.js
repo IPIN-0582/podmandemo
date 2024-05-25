@@ -1,16 +1,13 @@
+// deleteItem.js
 const db = require('../persistence');
-const redisClient = require('./redisClient');
+const redis = require('./redisClient');
 
 module.exports = async (req, res) => {
-    const { id } = req.params;
-    if (!id) {
-        return res.status(400).send('Bad request');
+    try {
+        await db.removeItem(req.params.id);
+        await redis.del('items'); // Clear cache
+        res.sendStatus(200);
+    } catch (error) {
+        res.status(500).send(error.message);
     }
-
-    await db.deleteItem(id);
-    
-    // Optional: Add a corresponding Redis operation if needed
-    await redisClient.del(`item-${id}`);
-
-    res.send('OK');
 };

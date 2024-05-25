@@ -1,17 +1,17 @@
+// updateItem.js
 const db = require('../persistence');
-const redisClient = require('./redisClient');
+const redis = require('./redisClient');
 
 module.exports = async (req, res) => {
-    const { id } = req.params;
-    const { name, completed } = req.body;
-    if (!id || !name || completed === undefined) {
-        return res.status(400).send('Bad request');
+    try {
+        await db.updateItem(req.params.id, {
+            name: req.body.name,
+            completed: req.body.completed,
+        });
+        const item = await db.getItem(req.params.id);
+        await redis.del('items'); // Clear cache
+        res.send(item);
+    } catch (error) {
+        res.status(500).send(error.message);
     }
-
-    await db.updateItem(id, { name, completed });
-    
-    // Optional: Add a corresponding Redis operation if needed
-    await redisClient.set(`item-${id}`, JSON.stringify({ id, name, completed }));
-
-    res.send('OK');
 };
