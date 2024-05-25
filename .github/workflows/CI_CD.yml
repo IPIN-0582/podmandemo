@@ -55,6 +55,12 @@ jobs:
       - name: Install dependencies
         run: yarn install
 
+      - name: Clean up Docker environment
+        run: |
+          docker stop $(docker ps -a -q) || true
+          docker rm $(docker ps -a -q) || true
+          docker volume prune -f || true
+
       - name: Run Docker Compose
         run: |
           cd app
