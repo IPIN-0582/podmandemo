@@ -56,11 +56,16 @@ jobs:
         run: yarn install
 
       - name: Build Docker image
-        run: cd app
-        run: docker build -t todoapp .
+        run: |
+          cd app
+          docker build -t todoapp .
 
       - name: Run Docker Compose
-        run: docker-compose up -d --build
+        run: |
+          cd app
+          docker-compose up -d --build
 
       - name: Stop and remove Docker containers
-        run: docker-compose down
+        run: |
+          cd app
+          docker-compose down
