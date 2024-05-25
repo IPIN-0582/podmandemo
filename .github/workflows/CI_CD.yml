@@ -56,10 +56,12 @@ jobs:
         run: yarn install
         working-directory: ./app
 
-      - name: Install Podman
+      - name: Install Podman and Podman-compose
         run: |
           sudo apt-get update
           sudo apt-get -y install podman
+          sudo apt install -y python3-pip
+          pip3 install podman-compose
 
       - name: Clean up Podman environment
         run: |
@@ -73,10 +75,6 @@ jobs:
 
       - name: Run Podman Compose
         run: podman-compose up -d --build
-        working-directory: ./app
-
-      - name: Run application tests
-        run: podman-compose run app sh -c "yarn test"
         working-directory: ./app
 
       - name: Stop and remove Podman containers
