@@ -1,4 +1,3 @@
-# .github/workflows/ci-cd.yml
 name: CI/CD Pipeline
 
 on:
@@ -55,18 +54,18 @@ jobs:
       - name: Install dependencies
         run: yarn install
 
-      - name: Clean up Docker environment
+      - name: Clean up Podman environment
         run: |
-          docker stop $(docker ps -a -q) || true
-          docker rm $(docker ps -a -q) || true
-          docker volume prune -f || true
+          podman stop $(podman ps -a -q) || true
+          podman rm $(podman ps -a -q) || true
+          podman volume prune -f || true
 
-      - name: Run Docker Compose
+      - name: Run podman Compose
         run: |
           cd app
-          docker-compose up -d --build
+          podman-compose up -d --build
 
-      - name: Stop and remove Docker containers
+      - name: Stop and remove podman containers
         run: |
           cd app
-          docker-compose down
+          podman-compose down
