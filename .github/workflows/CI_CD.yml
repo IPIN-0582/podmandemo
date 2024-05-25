@@ -74,7 +74,7 @@ jobs:
         working-directory: ./app
 
       - name: Run Podman Compose
-        run: podman-compose up -d
+        run: podman-compose up -d --build
         working-directory: ./app
 
       - name: Stop and remove Podman containers
