@@ -1,0 +1,33 @@
+services:
+    app:
+        build: .
+        ports:
+            - 127.0.0.1:3000:3000
+        working_dir: /app
+        volumes:
+            - .:/app
+        environment:
+            MYSQL_HOST: mysql
+            MYSQL_USER: root
+            MYSQL_PASSWORD: secret
+            MYSQL_DB: todos
+            REDIS_HOST: redis # Thêm biến môi trường cho Redis
+
+    mysql:
+        image: mysql:8.0
+        volumes:
+            - todo-mysql-data:/var/lib/mysql
+        environment:
+            MYSQL_ROOT_PASSWORD: secret
+            MYSQL_DATABASE: todos
+
+    redis:
+        image: redis:latest
+        ports:
+            - '6379:6379'
+        volumes:
+            - redis-data:/data
+
+volumes:
+    todo-mysql-data:
+    redis-data:
