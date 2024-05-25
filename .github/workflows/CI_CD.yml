@@ -1,3 +1,4 @@
+# .github/workflows/ci-cd.yml
 name: CI/CD Pipeline
 
 on:
@@ -53,6 +54,12 @@ jobs:
 
       - name: Install dependencies
         run: yarn install
+        working-directory: ./app
+
+      - name: Install Podman
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install podman
 
       - name: Clean up Podman environment
         run: |
@@ -60,12 +67,18 @@ jobs:
           podman rm $(podman ps -a -q) || true
           podman volume prune -f || true
 
-      - name: Run podman Compose
-        run: |
-          cd app
-          podman-compose up -d --build
+      - name: Build Podman image
+        run: podman build -t todoapp .
+        working-directory: ./app
 
-      - name: Stop and remove podman containers
-        run: |
-          cd app
-          podman-compose down
+      - name: Run Podman Compose
+        run: podman-compose up -d --build
+        working-directory: ./app
+
+      - name: Run application tests
+        run: podman-compose run app sh -c "yarn test"
+        working-directory: ./app
+
+      - name: Stop and remove Podman containers
+        run: podman-compose down
+        working-directory: ./app
